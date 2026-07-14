@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="sloth_bg">#080C14</color>
+    <color name="sloth_panel">#101622</color>
+    <color name="sloth_accent">#7C8CFF</color>
+    <color name="sloth_text">#E8ECF5</color>
+    <color name="sloth_muted">#7E899B</color>
+    <color name="sloth_light_bg">#F2F5FA</color>
+    <color name="sloth_light_panel">#FFFFFF</color>
+    <color name="sloth_light_text">#172033</color>
+</resources>

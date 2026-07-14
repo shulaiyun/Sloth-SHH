@@ -1,0 +1,73 @@
+{
+  "name": "slothssh",
+  "version": "0.1.0",
+  "private": true,
+  "author": "SlothSSH",
+  "description": "A convenient, modern server management SSH client.",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
+    "build": "vite build",
+    "start": "electron .",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "zsh scripts/build-windows.sh",
+    "dist:win:x64": "npm run build && scripts/download-electron-windows.sh x64 && electron-builder --win nsis --x64 --config.electronDist=build/electron-windows/electron-v43.1.0-win32-x64.zip",
+    "dist:win:arm64": "npm run build && scripts/download-electron-windows.sh arm64 && electron-builder --win nsis --arm64 --config.electronDist=build/electron-windows/electron-v43.1.0-win32-arm64.zip",
+    "dist:win:ia32": "npm run build && ELECTRON_VERSION=39.8.10 scripts/download-electron-windows.sh ia32 && electron-builder --win nsis --ia32 --config.electronVersion=39.8.10 --config.electronDist=build/electron-windows/electron-v39.8.10-win32-ia32.zip"
+  },
+  "build": {
+    "appId": "com.slothssh.desktop",
+    "productName": "SlothSSH",
+    "artifactName": "SlothSSH-${version}-${arch}.${ext}",
+    "npmRebuild": false,
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "!node_modules/cpu-features/**/*",
+      "!node_modules/nan/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "build/slothssh.icns",
+      "target": "dmg",
+      "extendInfo": {
+        "CFBundleName": "SlothSSH",
+        "CFBundleDisplayName": "SlothSSH"
+      }
+    },
+    "win": {
+      "icon": "build/slothssh.ico",
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SlothSSH",
+      "uninstallDisplayName": "SlothSSH"
+    }
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "latest",
+    "@xterm/xterm": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "ssh2": "latest"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "latest",
+    "concurrently": "latest",
+    "cross-env": "latest",
+    "electron": "latest",
+    "electron-builder": "latest",
+    "vite": "latest",
+    "wait-on": "latest"
+  }
+}

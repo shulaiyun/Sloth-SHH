@@ -1,0 +1,37 @@
+node_modules/
+dist/
+release/
+tmp/
+coverage/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+keystore.properties
+
+# Desktop build downloads and installers
+build/electron-*/
+*.dmg
+*.exe
+*.msi
+*.AppImage
+*.deb
+
+# Android build output and machine-local state
+android/.gradle/
+android/local.properties
+android/**/build/
+*.apk
+*.aab
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+*.log

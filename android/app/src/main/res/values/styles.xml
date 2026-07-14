@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SlothSSH.Dark" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">#080C14</item>
+        <item name="android:statusBarColor">#080C14</item>
+        <item name="android:colorAccent">#7C8CFF</item>
+        <item name="android:windowBackground">#080C14</item>
+        <item name="android:alertDialogTheme">@style/SlothDialog.Dark</item>
+    </style>
+    <style name="Theme.SlothSSH.Light" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">#F2F5FA</item>
+        <item name="android:statusBarColor">#F2F5FA</item>
+        <item name="android:colorAccent">#5D6FE8</item>
+        <item name="android:windowBackground">#F2F5FA</item>
+        <item name="android:alertDialogTheme">@style/SlothDialog.Light</item>
+    </style>
+    <style name="SlothDialog.Dark" parent="android:style/Theme.Material.Dialog.Alert">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowBackground">#101622</item>
+        <item name="android:colorAccent">#7C8CFF</item>
+        <item name="android:textColorPrimary">#E8ECF5</item>
+        <item name="android:textColorSecondary">#8D98AC</item>
+    </style>
+    <style name="SlothDialog.Light" parent="android:style/Theme.Material.Light.Dialog.Alert">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowBackground">#FFFFFF</item>
+        <item name="android:colorAccent">#5D6FE8</item>
+        <item name="android:textColorPrimary">#172033</item>
+        <item name="android:textColorSecondary">#667287</item>
+    </style>
+</resources>
