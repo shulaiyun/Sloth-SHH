@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
+import { WebglAddon } from '@xterm/addon-webgl'
 import slothLogo from './assets/slothssh-icon.png'
 import {
   Activity, AlertTriangle, ChevronDown, CirclePlus, ClipboardPaste, Clock3, Command, Copy, Cpu, Eraser, ExternalLink, Eye,
@@ -1144,6 +1145,18 @@ function SessionTerminal({ session, active, fontSize, theme, onReady, onDispose,
     const fit = new FitAddon()
     terminal.loadAddon(fit)
     terminal.open(element)
+    let webgl = null
+    try {
+      webgl = new WebglAddon()
+      webgl.onContextLoss(() => {
+        try { webgl?.dispose() } catch { /* fall back to the DOM renderer */ }
+        webgl = null
+      })
+      terminal.loadAddon(webgl)
+    } catch {
+      try { webgl?.dispose() } catch { /* WebGL is unavailable on this device */ }
+      webgl = null
+    }
     const instance = { terminal, fit, element, readyWritten: false, connectionState: session.status?.state || 'connecting' }
     terminal.attachCustomKeyEventHandler((event) => {
       if (event.type !== 'keydown') return true
