@@ -280,6 +280,16 @@ function App() {
 
   useEffect(() => api.ssh.onStatus((nextStatus) => {
     if (!nextStatus?.sessionId) return
+    const instance = sessionTerminalsRef.current.get(nextStatus.sessionId)
+    if (instance) {
+      const previousState = instance.connectionState
+      instance.connectionState = nextStatus.state
+      if (nextStatus.state === 'disconnected' && previousState === 'connected') {
+        instance.terminal.write('\x1b[0m\r\n\x1b[38;2;243;166;90m● SSH 连接已断开，终端记录已保留，可点击“连接”继续\x1b[0m\r\n', () => {
+          instance.terminal.scrollToBottom()
+        })
+      }
+    }
     setTerminalSessions((current) => current.map((item) => item.id === nextStatus.sessionId ? { ...item, status: nextStatus } : item))
     if (activeSessionIdRef.current === nextStatus.sessionId) setStatus(nextStatus)
   }), [])
@@ -624,7 +634,13 @@ function App() {
     setRemoteFiles([])
     if (reusable) {
       const instance = sessionTerminalsRef.current.get(sessionId)
-      if (instance) { instance.readyWritten = false; instance.terminal.clear(); instance.terminal.reset() }
+      if (instance) {
+        instance.readyWritten = false
+        instance.connectionState = 'connecting'
+        instance.terminal.write('\x1b[0m\r\n\x1b[38;2;124;140;255m── 正在重新连接，以上终端记录已保留 ──\x1b[0m\r\n', () => {
+          instance.terminal.scrollToBottom()
+        })
+      }
     }
     setModal(null)
     try {
@@ -1119,7 +1135,8 @@ function SessionTerminal({ session, active, fontSize, theme, onReady, onDispose,
     if (!element) return
     const terminal = new Terminal({
       cursorBlink: true, cursorStyle: 'bar', fontFamily: '"SFMono-Regular", "JetBrains Mono", Menlo, monospace',
-      fontSize, lineHeight: 1.5, letterSpacing: 0.2, scrollback: 10000, allowProposedApi: true,
+      fontSize, lineHeight: 1, letterSpacing: 0, scrollback: 50000, allowProposedApi: true,
+      customGlyphs: true, rescaleOverlappingGlyphs: true,
       allowTransparency: true, convertEol: false,
       theme: terminalThemes[theme] || terminalThemes.midnight,
     })
@@ -1127,7 +1144,7 @@ function SessionTerminal({ session, active, fontSize, theme, onReady, onDispose,
     const fit = new FitAddon()
     terminal.loadAddon(fit)
     terminal.open(element)
-    const instance = { terminal, fit, element, readyWritten: false }
+    const instance = { terminal, fit, element, readyWritten: false, connectionState: session.status?.state || 'connecting' }
     terminal.attachCustomKeyEventHandler((event) => {
       if (event.type !== 'keydown') return true
       const key = event.key.toLowerCase()
