@@ -7,6 +7,7 @@ let fileManager = FileManager.default
 let root = URL(fileURLWithPath: fileManager.currentDirectoryPath)
 let sourceURL = root.appendingPathComponent("build/slothssh-master.png")
 let resourcesURL = root.appendingPathComponent("android/app/src/main/res")
+let buildURL = root.appendingPathComponent("build")
 
 guard let logo = NSImage(contentsOf: sourceURL) else {
     fatalError("Unable to load SlothSSH logo at \(sourceURL.path)")
@@ -117,6 +118,47 @@ func write(_ data: Data, to relativePath: String) {
     print("Generated \(url.path)")
 }
 
+func writeProjectAsset(_ data: Data, to relativePath: String) {
+    let url = root.appendingPathComponent(relativePath)
+    try! fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try! data.write(to: url, options: .atomic)
+    print("Generated \(url.path)")
+}
+
+extension Data {
+    mutating func appendLittleEndian<T: FixedWidthInteger>(_ value: T) {
+        var littleEndian = value.littleEndian
+        Swift.withUnsafeBytes(of: &littleEndian) { bytes in
+            append(contentsOf: bytes)
+        }
+    }
+}
+
+func windowsIcon(images: [(size: Int, data: Data)]) -> Data {
+    var icon = Data()
+    icon.appendLittleEndian(UInt16(0))
+    icon.appendLittleEndian(UInt16(1))
+    icon.appendLittleEndian(UInt16(images.count))
+
+    var offset = 6 + images.count * 16
+    for image in images {
+        icon.append(UInt8(image.size == 256 ? 0 : image.size))
+        icon.append(UInt8(image.size == 256 ? 0 : image.size))
+        icon.append(UInt8(0))
+        icon.append(UInt8(0))
+        icon.appendLittleEndian(UInt16(1))
+        icon.appendLittleEndian(UInt16(32))
+        icon.appendLittleEndian(UInt32(image.data.count))
+        icon.appendLittleEndian(UInt32(offset))
+        offset += image.data.count
+    }
+
+    for image in images {
+        icon.append(image.data)
+    }
+    return icon
+}
+
 write(render(size: 1024, backgroundShape: nil), to: "drawable-nodpi/slothssh_launcher_foreground.png")
 
 let densities = [
@@ -131,3 +173,44 @@ for (folder, size) in densities {
     write(render(size: size, backgroundShape: "rounded"), to: "\(folder)/ic_launcher.png")
     write(render(size: size, backgroundShape: "circle"), to: "\(folder)/ic_launcher_round.png")
 }
+
+let desktopMaster = render(size: 1024, backgroundShape: "rounded")
+writeProjectAsset(desktopMaster, to: "build/slothssh-1024.png")
+writeProjectAsset(render(size: 512, backgroundShape: "rounded"), to: "electron/assets/slothssh-icon.png")
+writeProjectAsset(render(size: 512, backgroundShape: "rounded"), to: "public/slothssh-icon.png")
+
+let iconset = [
+    ("icon_16x16.png", 16),
+    ("icon_16x16@2x.png", 32),
+    ("icon_32x32.png", 32),
+    ("icon_32x32@2x.png", 64),
+    ("icon_128x128.png", 128),
+    ("icon_128x128@2x.png", 256),
+    ("icon_256x256.png", 256),
+    ("icon_256x256@2x.png", 512),
+    ("icon_512x512.png", 512),
+    ("icon_512x512@2x.png", 1024)
+]
+
+for (filename, size) in iconset {
+    writeProjectAsset(render(size: size, backgroundShape: "rounded"), to: "build/slothssh.iconset/\(filename)")
+}
+
+let iconutil = Process()
+iconutil.executableURL = URL(fileURLWithPath: "/usr/bin/iconutil")
+iconutil.arguments = [
+    "-c", "icns",
+    "-o", buildURL.appendingPathComponent("slothssh.icns").path,
+    buildURL.appendingPathComponent("slothssh.iconset").path
+]
+try! iconutil.run()
+iconutil.waitUntilExit()
+guard iconutil.terminationStatus == 0 else {
+    fatalError("iconutil failed with status \(iconutil.terminationStatus)")
+}
+print("Generated \(buildURL.appendingPathComponent("slothssh.icns").path)")
+
+let icoImages = [16, 24, 32, 48, 64, 128, 256].map {
+    (size: $0, data: render(size: $0, backgroundShape: "rounded"))
+}
+writeProjectAsset(windowsIcon(images: icoImages), to: "build/slothssh.ico")

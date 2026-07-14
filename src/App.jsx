@@ -924,7 +924,7 @@ function App() {
   return (
     <main className={`app-shell ${serverToolsOpen ? 'tools-left' : ''}`}>
       <aside className="rail">
-        <div className="brand"><img src={slothLogo} alt="SlothSSH" /></div>
+        <div className="brand"><img src={slothLogo} alt="SlothSSH" /><span>SlothSSH</span></div>
         <nav className="rail-nav">
           <RailButton icon={LayoutGrid} active={activeView === 'hosts'} label={t('全部主机')} onClick={() => setActiveView('hosts')} />
           <RailButton icon={Star} active={activeView === 'favorites'} label={t('收藏主机')} onClick={() => setActiveView('favorites')} />

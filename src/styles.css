@@ -24,8 +24,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid #7c8cff88; outlin
 .no-drag, .drag-region button { -webkit-app-region: no-drag; }
 
 .rail { display: flex; flex-direction: column; align-items: center; padding: 49px 0 18px; border-right: 1px solid var(--line); background: #090c12; -webkit-app-region: drag; }
-.brand { width: 56px; height: 56px; display: grid; place-items: center; margin: -10px 0 16px; overflow: visible; border-radius: 14px; filter: drop-shadow(0 8px 14px #596be13f); }
-.brand img { width: 56px; height: 56px; display: block; object-fit: contain; }
+.brand { width: 60px; min-height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; margin: -10px 0 8px; overflow: visible; border-radius: 14px; filter: drop-shadow(0 8px 14px #596be13f); }
+.brand img { width: 52px; height: 52px; display: block; object-fit: contain; }
+.brand span { color: #aeb8d9; font-size: 8px; font-weight: 760; letter-spacing: -.02em; line-height: 1; }
 .rail-nav { display: flex; flex: 1; flex-direction: column; gap: 8px; }
 .rail-button { position: relative; width: 38px; height: 38px; display: grid; place-items: center; border: 0; border-radius: 10px; color: #697180; background: transparent; cursor: pointer; transition: .18s ease; -webkit-app-region: no-drag; }
 .rail-button:hover { color: #bec4d0; background: #ffffff08; }
