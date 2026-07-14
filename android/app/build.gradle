@@ -2,6 +2,9 @@ plugins {
     id "com.android.application"
 }
 
+def releaseKeystorePath = System.getenv("SLOTHSSH_KEYSTORE_FILE")
+def hasReleaseSigning = releaseKeystorePath && file(releaseKeystorePath).exists()
+
 android {
     namespace "com.slothssh.mobile"
     compileSdk 36
@@ -14,8 +17,22 @@ android {
         versionName "0.1.0"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile file(releaseKeystorePath)
+                storePassword System.getenv("SLOTHSSH_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("SLOTHSSH_KEY_ALIAS")
+                keyPassword System.getenv("SLOTHSSH_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }

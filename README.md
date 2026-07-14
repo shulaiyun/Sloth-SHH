@@ -1,5 +1,7 @@
 # SlothSSH
 
+[![Build Installers](https://github.com/shulaiyun/Sloth-SHH/actions/workflows/build-installers.yml/badge.svg)](https://github.com/shulaiyun/Sloth-SHH/actions/workflows/build-installers.yml)
+
 SlothSSH 是一个偏服务器日常管理的桌面 SSH 客户端，使用 Electron、React、ssh2 和 xterm 构建。
 
 ## 功能
@@ -43,5 +45,24 @@ npm start
 ```bash
 npm run dist
 ```
+
+## GitHub 云端构建
+
+仓库已配置 `Build Installers` 工作流。在 GitHub 仓库打开 **Actions → Build Installers → Run workflow**，即可构建并下载以下文件：
+
+| 平台 | 设备架构 | 输出格式 |
+| --- | --- | --- |
+| Windows | x64、ARM64、x86 32 位 | NSIS `.exe` |
+| macOS | Intel x64、Apple Silicon ARM64 | `.dmg`、`.zip` |
+| Linux | x64、ARM64 | `.AppImage`、`.deb` |
+| Android 8.0+ | ARM、ARM64、x86、x86_64 通用 | `.apk`、`.aab` |
+
+手动运行产生的文件会在该次 Actions 任务的 **Artifacts** 区域保留 30 天。推送 `v` 开头的版本标签（例如 `v0.1.0`）时，全部平台文件会自动发布到 GitHub Releases。
+
+未配置签名密钥时，Windows、macOS 和 Linux 包可以用于测试；Android 会提供可直接安装的 Debug APK，以及未签名的 Release APK/AAB。正式分发时可在仓库 Secrets 中配置对应平台的签名信息，工作流已经预留以下变量：
+
+- Windows：`WIN_CSC_LINK`、`WIN_CSC_KEY_PASSWORD`
+- macOS：`MAC_CSC_LINK`、`MAC_CSC_KEY_PASSWORD`、`APPLE_ID`、`APPLE_APP_SPECIFIC_PASSWORD`、`APPLE_TEAM_ID`
+- Android：`ANDROID_KEYSTORE_BASE64`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`
 
 服务器资料保存在 Electron 的 `userData/hosts.json`，翻译设置保存在 `userData/settings.json`。配置文件权限为 `0600`；服务器密码及接口密钥通过 Electron `safeStorage` 调用系统安全存储进行加密，不以明文写入配置文件。

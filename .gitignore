@@ -26,6 +26,7 @@ build/electron-*/
 # Android build output and machine-local state
 android/.gradle/
 android/local.properties
+android/ci-release.jks
 android/**/build/
 *.apk
 *.aab

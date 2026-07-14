@@ -1,0 +1,203 @@
+name: Build Installers
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: installers-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    name: Windows ${{ matrix.arch }}
+    runs-on: windows-2025
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            builder_args: --x64
+          - arch: arm64
+            builder_args: --arm64
+          - arch: ia32
+            builder_args: --ia32 --config.electronVersion=39.8.10
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build web application
+        run: npm run build
+      - name: Package Windows installer
+        run: npx electron-builder --win nsis ${{ matrix.builder_args }} --publish never
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v7
+        with:
+          name: SlothSSH-Windows-${{ matrix.arch }}
+          path: release/*.exe
+          if-no-files-found: error
+          retention-days: 30
+
+  macos:
+    name: macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: macos-15-intel
+          - arch: arm64
+            runner: macos-15
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build web application
+        run: npm run build
+      - name: Package macOS application
+        run: npx electron-builder --mac dmg zip --${{ matrix.arch }} --publish never
+      - name: Upload macOS packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: SlothSSH-macOS-${{ matrix.arch }}
+          path: |
+            release/*.dmg
+            release/*.zip
+          if-no-files-found: error
+          retention-days: 30
+
+  linux:
+    name: Linux ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build web application
+        run: npm run build
+      - name: Package Linux application
+        run: npx electron-builder --linux AppImage deb --${{ matrix.arch }} --publish never
+      - name: Upload Linux packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: SlothSSH-Linux-${{ matrix.arch }}
+          path: |
+            release/*.AppImage
+            release/*.deb
+          if-no-files-found: error
+          retention-days: 30
+
+  android:
+    name: Android universal
+    runs-on: ubuntu-24.04
+    env:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      SLOTHSSH_KEYSTORE_FILE: ${{ github.workspace }}/android/ci-release.jks
+      SLOTHSSH_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      SLOTHSSH_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      SLOTHSSH_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: false
+      - name: Prepare optional Android release signing
+        if: env.ANDROID_KEYSTORE_BASE64 != ''
+        shell: bash
+        run: |
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$SLOTHSSH_KEYSTORE_FILE"
+          chmod 600 "$SLOTHSSH_KEYSTORE_FILE"
+      - name: Lint and build Android packages
+        working-directory: android
+        run: ./gradlew lintDebug assembleDebug assembleRelease bundleRelease --no-daemon
+      - name: Collect Android packages
+        shell: bash
+        run: |
+          mkdir -p release/android
+          cp android/app/build/outputs/apk/debug/app-debug.apk release/android/SlothSSH-Android-universal-debug.apk
+
+          release_apk="$(find android/app/build/outputs/apk/release -maxdepth 1 -name '*.apk' -print -quit)"
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            cp "$release_apk" release/android/SlothSSH-Android-universal-release-signed.apk
+            cp android/app/build/outputs/bundle/release/app-release.aab release/android/SlothSSH-Android-release-signed.aab
+          else
+            cp "$release_apk" release/android/SlothSSH-Android-universal-release-unsigned.apk
+            cp android/app/build/outputs/bundle/release/app-release.aab release/android/SlothSSH-Android-release-unsigned.aab
+          fi
+      - name: Remove temporary signing file
+        if: always()
+        shell: bash
+        run: rm -f "$SLOTHSSH_KEYSTORE_FILE"
+      - name: Upload Android packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: SlothSSH-Android-universal
+          path: release/android/*
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos, linux, android]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download every package
+        uses: actions/download-artifact@v8
+        with:
+          path: release
+          merge-multiple: true
+      - name: Publish packages to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          mapfile -d '' packages < <(find release -type f -print0)
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "${packages[@]}" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "${packages[@]}" --verify-tag --generate-notes --title "SlothSSH $GITHUB_REF_NAME"
+          fi
