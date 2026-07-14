@@ -1,0 +1,48 @@
+name: Publish Existing Installers
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Successful installer build run ID
+        required: true
+        type: string
+      tag:
+        description: Existing version tag to publish
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    name: Publish existing packages
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download packages from build run
+        uses: actions/download-artifact@v8
+        with:
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.run_id }}
+          path: release
+          merge-multiple: true
+      - name: Publish packages to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          mapfile -d '' packages < <(find release -type f -print0)
+          if [ "${#packages[@]}" -eq 0 ]; then
+            echo "No installer packages were downloaded" >&2
+            exit 1
+          fi
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "${packages[@]}" --clobber
+          else
+            gh release create "$RELEASE_TAG" "${packages[@]}" --verify-tag --generate-notes --title "SlothSSH $RELEASE_TAG"
+          fi
