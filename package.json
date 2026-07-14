@@ -2,7 +2,11 @@
   "name": "slothssh",
   "version": "0.1.0",
   "private": true,
-  "author": "SlothSSH",
+  "author": {
+    "name": "SlothSSH",
+    "email": "256729376+shulaiyun@users.noreply.github.com"
+  },
+  "desktopName": "SlothSSH.desktop",
   "description": "A convenient, modern server management SSH client.",
   "main": "electron/main.cjs",
   "scripts": {
@@ -47,6 +51,7 @@
     "linux": {
       "icon": "build/slothssh-1024.png",
       "category": "Development",
+      "syncDesktopName": true,
       "target": [
         "AppImage",
         "deb"
