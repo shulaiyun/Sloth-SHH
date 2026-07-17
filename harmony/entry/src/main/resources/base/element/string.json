@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "app_name",
+      "value": "SlothSSH"
+    },
+    {
+      "name": "module_desc",
+      "value": "SlothSSH 鸿蒙原生 SSH 客户端"
+    },
+    {
+      "name": "ability_desc",
+      "value": "管理和连接远程服务器"
+    }
+  ]
+}

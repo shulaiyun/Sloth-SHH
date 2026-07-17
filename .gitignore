@@ -31,6 +31,15 @@ android/**/build/
 *.apk
 *.aab
 
+# HarmonyOS build output and machine-local state
+harmony/.hvigor/
+harmony/.idea/
+harmony/oh_modules/
+harmony/local.properties
+harmony/**/build/
+*.hap
+*.app
+
 # IDE and OS files
 .idea/
 .vscode/

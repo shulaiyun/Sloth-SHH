@@ -1,0 +1,7 @@
+# Keep the SSH package's native binding and public bridge names.
+-keep-global-name
+-keep-file-name
+-keep-property-name fingerprint
+-keep-property-name authenticatePassword
+-keep-property-name disconnect
+-keep-property-name exec

@@ -2,7 +2,7 @@
 
 [![Build Installers](https://github.com/shulaiyun/Sloth-SHH/actions/workflows/build-installers.yml/badge.svg)](https://github.com/shulaiyun/Sloth-SHH/actions/workflows/build-installers.yml)
 
-SlothSSH 是一个偏服务器日常管理的桌面 SSH 客户端，使用 Electron、React、ssh2 和 xterm 构建。
+SlothSSH 是一个偏服务器日常管理的跨平台 SSH 客户端。桌面版使用 Electron、React、ssh2 和 xterm 构建，同时提供原生 Android 客户端和 HarmonyOS NEXT ArkTS/ArkUI 工程。
 
 ## 功能
 
@@ -25,6 +25,8 @@ SlothSSH 是一个偏服务器日常管理的桌面 SSH 客户端，使用 Elect
 - DeepSeek、阿里百炼、智谱、硅基流动、OpenAI 和自定义大模型接口预设
 - 可调节终端字号
 - macOS / Windows 桌面打包配置
+- Android 8.0+ 原生移动客户端
+- HarmonyOS NEXT 原生主机管理、安全凭据存储和 SSH 命令终端
 
 ## 运行
 
@@ -66,3 +68,8 @@ npm run dist
 - Android：`ANDROID_KEYSTORE_BASE64`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`
 
 服务器资料保存在 Electron 的 `userData/hosts.json`，翻译设置保存在 `userData/settings.json`。配置文件权限为 `0600`；服务器密码及接口密钥通过 Electron `safeStorage` 调用系统安全存储进行加密，不以明文写入配置文件。
+
+## 移动端源码
+
+- Android 工程与构建说明：[`android/README.md`](android/README.md)
+- HarmonyOS NEXT 工程与构建说明：[`harmony/README.md`](harmony/README.md)

@@ -1,0 +1,11 @@
+{
+  "modelVersion": "5.0.0",
+  "name": "slothssh-harmony",
+  "version": "0.1.0",
+  "description": "SlothSSH native client for HarmonyOS NEXT",
+  "main": "",
+  "author": "SlothSSH",
+  "license": "UNLICENSED",
+  "dependencies": {},
+  "devDependencies": {}
+}

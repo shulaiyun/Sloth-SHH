@@ -1,0 +1,11 @@
+{
+  "name": "entry",
+  "version": "0.1.0",
+  "description": "SlothSSH HarmonyOS entry module",
+  "main": "",
+  "author": "SlothSSH",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@ohos-rs/ssh": "0.0.1"
+  }
+}
